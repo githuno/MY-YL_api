@@ -26,10 +26,6 @@ RUN apt-get update
 RUN apt-get install -y libgl1-mesa-glx
 
 RUN git clone --depth=1 https://github.com/githuno/yolov5.git
-RUN pwd
-RUN ls -al ../
-RUN ls -al 
-RUN ls -al yolov5/
 RUN pip3 install --default-timeout=1000 -r yolov5/requirements.txt
 RUN mv test_predict.py yolov5/classify/
 
@@ -37,3 +33,4 @@ RUN mv test_predict.py yolov5/classify/
 
 # コンテナの起動時に実行するコマンドを指定
 # CMD ["python", "main.py"]
+ENTRYPOINT ["python", "main.py"]
