@@ -9,16 +9,16 @@ WORKDIR /app
 RUN pip3 install --upgrade pip
 RUN pip3 install fastapi
 RUN pip3 install uvicorn[standard]
-RUN pip3 install pillow==7.1.2
-RUN pip3 install matplotlib==3.3
-RUN pip3 install seaborn==0.11.0
-RUN pip3 install numpy==1.18.5
-RUN pip3 install pandas==1.1.4
-RUN pip3 install requests==2.23.0
+RUN pip3 install pillow>=7.1.2
+RUN pip3 install matplotlib>=3.3
+RUN pip3 install seaborn>=0.11.0
+RUN pip3 install numpy>=1.18.5
+RUN pip3 install pandas>=1.1.4
+RUN pip3 install requests>=2.23.0
 RUN pip3 install psutil
 RUN pip3 install torch==1.7.1
 RUN pip3 install torchvision==0.8.2
-RUN pip3 install tqdm==4.64.0
+RUN pip3 install tqdm>=4.64.0
 RUN pip3 install python-multipart
 RUN pip3 install opencv-python
 
@@ -44,4 +44,4 @@ RUN rm -rf /var/lib/apt/lists/*
 
 RUN export LD_LIBRARY_PATH=/usr/local/cuda/lib64:$LD_LIBRARY_PATH
 
-ENTRYPOINT ["python", "main.py"]
+ENTRYPOINT ["python", "main.py", "--host", "0.0.0.0", "--port", "8080" ]
