@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 import torch.nn.functional as F
+import torchvision.transforms as T
 from PIL import Image
 # from torchvision import transforms # 追加(chatGPT案)
 
@@ -9,24 +10,37 @@ from PIL import Image
 model = torch.hub.load('ultralytics/yolov5', 'custom', 'yolov5s-cls.pt')
 names = model.names
 
-async def preprocess(image_path, max_size=(640, 640)) :
+async def preprocess(image_path):
     # 画像を読み込む
-    img = Image.open(image_path)
-    img.thumbnail(max_size) # アスペクト比を維持しながら画像サイズを縮小
-    img_arr = np.array(img) # 画像をNumPy配列に変換する
-    img.close()  # メモリリーク予防で画像はクローズ
+    image = Image.open(image_path).convert('RGB')
+    width, height = image.size
+    
+    # 縦横の大きい方を224に縮小するスケーリングファクターを計算する
+    scale_factor = 224 / max(width, height)
+    
+    # 縮小後のサイズを計算する
+    new_width = int(width * scale_factor)
+    new_height = int(height * scale_factor)
+    
+    # 画像をリサイズする
+    image = image.resize((new_width, new_height))
+    
+    # 縦横の小さい方に対してパディングを行う
+    left_pad = (224 - new_width) // 2
+    right_pad = 224 - new_width - left_pad
+    top_pad = (224 - new_height) // 2
+    bottom_pad = 224 - new_height - top_pad
+    padding = (left_pad, top_pad, right_pad, bottom_pad)
+    image = T.functional.pad(image, padding)
+    
+    # 画像をテンソルに変換する
+    image = T.functional.to_tensor(image)
+    
+    # テンソルの次元を変更する
+    image = image.unsqueeze(0)
+    
+    return image
 
-    # NumPy配列を正規化する
-    img_arr = img_arr.astype(np.float32) / 255.0 # 浮動小数点数(float32)に変換し,255で割って0から1の範囲に変換
-    img_arr = (img_arr - 0.5) / 0.5 # 各pixel値から0.5を引き([-0.5、0.5]の範囲に変換)、0.5で割る([-0.5、0.5]の範囲に変換)
-    img_tensor = torch.from_numpy(img_arr) # NumPy配列をトーチテンソルに変換する
-    img_tensor = img_tensor.permute(2, 0, 1).unsqueeze(0)  # テンソルの形状をBCHW形式に変更する
-
-    # # ここで画像のサイズを変更(chatGPT案)
-    # resize = transforms.Resize((128, 128)) # サイズは適宜調整
-    # img_tensor = resize(img_tensor)
-
-    return img_tensor
 
 async def predict(image_tensor) :
     # validate
